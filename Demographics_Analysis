@@ -1,0 +1,291 @@
+from bs4 import BeautifulSoup
+import requests
+import csv
+import pandas as pd
+import re
+
+countries=["China","India","Argentina","Kazakhstan","Pakistan","Turkey","Chile","Afghanistan"
+           ,"Ukraine","Germany","New_Zealand","Romania","Cambodia","Bangladesh","Greece","North_Korea",
+"Bulgaria","Hungary","Sri_Lanka","Croatia","Switzerland","Moldova","Belgium","Fiji","Lebanon"]
+
+
+le=len(countries)
+#print(le)
+
+coun="https://en.m.wikipedia.org/wiki/Demographics_of_"
+csv_file = open('World_population.csv', 'w')
+    
+csv_writer = csv.writer(csv_file)
+
+csv_writer.writerow(['Country','Population','Density (per sq mi)','Growth rate','Birth rate (/1,000 population)','Death rate (/1,000 population)','Life expectancy',
+'Male','Female',
+                   'Fertility rate (children born per woman)','Infant mortality rate',
+                   '65 and over','Sex ratio','At birth','Under 15',
+                     '65 and over'])
+for i in countries:           
+    body=""
+    url1=coun+i
+   # print (url1)
+    source = requests.get(url1).text
+
+    soup = BeautifulSoup(source, 'lxml')
+
+    table=soup.find('table',{'class':'infobox'}).tbody
+    rows=table.find_all('tr')
+    country_name=[v.text.replace('Demographics of ','').replace('the','The').replace(' StateStatus Civitatis Vaticanae\xa0\xa0(Latin)Stato della Città del Vaticano\xa0\xa0(Italian)','').replace('Largest census metropolitan areas in Canada by population (2016 census)[19] viewtalkedit\n','Canada') for v in rows[0].find_all('th')]
+    #df=pd.dataframe(country_name=country_name)
+    h0=[p0.text for p0 in rows[1].find_all('th')]
+    h1=[p1.text for p1 in rows[2].find_all('th')]
+    h2=[p2.text for p2 in rows[3].find_all('th')]
+    h3=[p3.text for p3 in rows[4].find_all('th')]
+    h4=[p4.text for p4 in rows[5].find_all('th')]
+    h5=[p5.text.replace("\xa0•\xa0male","Male").replace("\xa0•\xa0female","Female") for p5 in rows[6].find_all('th')]
+    h6=[p6.text.replace("\xa0•\xa0male","Male").replace("\xa0•\xa0female","Female") for p6 in rows[7].find_all('th')]
+    h7=[p7.text.replace("\xa0•\xa0male","Male").replace("\xa0•\xa0female","Female") for p7 in rows[8].find_all('th')]
+    h8=[p8.text.replace("\xa0•\xa0male","Male").replace("\xa0•\xa0female","Female") for p8 in rows[9].find_all('th')]
+    h9=[p9.text for p9 in rows[10].find_all('th')]
+    h10=[p10.text for p10 in rows[11].find_all('th')]
+    h11=[p11.text for p11 in rows[12].find_all('th')]
+    h12=[p12.text for p12 in rows[13].find_all('th')]
+    h13=[p13.text for p13 in rows[14].find_all('th')]
+    h14=[p14.text for p14 in rows[15].find_all('th')]
+    h15=[p15.text for p15 in rows[16].find_all('th')]
+    h16=[p16.text for p16 in rows[17].find_all('th')]
+    h17=[p17.text for p17 in rows[18].find_all('th')]
+    h18=[p18.text for p18 in rows[19].find_all('th')]
+    h19=[p19.text for p19 in rows[20].find_all('th')]
+    h20=[p20.text for p20 in rows[21].find_all('th')]
+    h21=[p21.text for p21 in rows[22].find_all('th')]
+    
+    headings=[h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14,h15,h16,h17,h18,h19,h20,h21]
+    population=[]
+    den=[]
+    dens=""
+    densi=""
+    gro=[]
+    grow=""
+    growt=""
+    under64=""
+    growthh=0.00
+    und644=[]
+    above=""
+    tot=[]
+    tot2=""
+    tot3=""
+    atbi3=[]
+    u153=""
+    sixty3=""
+    over3=""
+    
+    
+    
+    for h in range(1,23):
+        for b in range(0,len(headings)):
+            
+            body=body+i
+            if ([p0.text for p0 in rows[h].find_all('th')]==['Population']):
+                pop=[p0.text for p0 in rows[h].find_all('td')]
+                for j in pop:
+                    popu=j.split("(",1)
+                    popul="".join(popu[0])
+                    popul=popul.replace("[1]","").replace('\n',"").replace("million",",000,000").replace("[2]","").replace(" ","").replace("5.5",",55")
+                    population=popul.split(" ")
+                    popul1=population[0]
+                    body=body+popul1
+                    
+                    
+            if([p1.text for p1 in rows[h].find_all('th')]==['Density']):
+                den=[p1.text for p1 in rows[h].find_all('td')]
+                for j1 in den:
+                    dens=re.split(" |/",j1)
+                    densi="".join(dens[0])
+                    body=body+densi
+                
+                
+            if ([p2.text for p2 in rows[h].find_all('th')]==['Growth rate']):
+                gro=[p2.text for p2 in rows[h].find_all('td')]
+                for j2 in gro:
+                    grow=j2.strip()
+                    grow=grow.replace("per","/")
+                    grow=grow.translate({ord(i): None for i in 'abcdefghijklmnopqrstuvwxyz'})
+                    grow=grow.split(" (")
+                    grow=grow[0].replace(" ","").replace("−","-")
+                    grow1="".join(grow[0])
+                    lenn=len(grow)
+                    if lenn>6:
+                        growt=grow.split("/")
+                        growt1=float(growt[0])
+                        if growt[1]=="1,000":
+                            growt2=int(growt[1].replace(",",""))
+                        growt3=float(growt1/growt2*100)
+                        grow='%.2f'%growt3
+                    body=body+grow   
+                    
+            if([p3.text for p3 in rows[h].find_all('th')]==['Birth rate']):
+                bir=[p3.text for p3 in rows[h].find_all('td')]
+                
+                for j3 in bir:
+                    birt=j3.strip()
+                    birt=birt.replace("  "," ")
+                    birth=birt.split(" ")
+                    birth1=birth[0]
+                body=body+birth1
+            else:
+                bir="0"
+                
+                
+            if([p4.text for p4 in rows[h].find_all('th')]==['Death rate']):
+                dea=[p4.text for p4 in rows[h].find_all('td')]
+                for j4 in dea:
+                    deat=j4.strip()
+                    deat=deat.replace("  "," ")
+                    death=deat.split(" ")
+                    death1=death[0]
+                    body=body+death1
+                
+            if([p5.text for p5 in rows[h].find_all('th')]==['Life expectancy']):
+                life=[p5.text for p5 in rows[h].find_all('td')]
+                for j5 in life:
+                    lifeex=j5.strip()
+                    lifeexp=lifeex.split(" ")
+                    life1=lifeexp[0]
+                    body=body+life1
+                
+            if([p6.text for p6 in rows[h].find_all('th')]==['\xa0•\xa0male']):
+                male=[p6.text for p6 in rows[h].find_all('td')]
+                for j6 in male:
+                    male1=j6.strip()
+                    male2=male1.split(" ")
+                    m2=male2[0]
+                    body=body+m2
+    
+    
+            if([p7.text for p7 in rows[h].find_all('th')]==['\xa0•\xa0female']):
+                female=[p7.text for p7 in rows[h].find_all('td')]
+                for j7 in female:
+                    female1=j7.strip()
+                    female2=female1.split(" ")
+                    f2=female2[0]
+                    body=body+f2
+    
+            
+        
+            if([p8.text for p8 in rows[h].find_all('th')]==['Fertility rate']):
+                fert=[p8.text for p8 in rows[h].find_all('td')]
+                for j8 in fert:
+                    fert1=j8.strip()
+                    fert2=fert1.split(" ")
+                    f1=fert2[0]
+                    body=body+f1
+        
+        
+            if([p9.text for p9 in rows[h].find_all('th')]==['Infant mortality rate']):
+                inf=[p9.text for p9 in rows[h].find_all('td')]
+                for j9 in inf:
+                    inf1=j9.strip()
+                    inf2=inf1.split(" ")
+                    infy=inf2[0]
+                    body=body+infy
+        
+            if([p10.text for p10 in rows[h].find_all('th')]==['0–14 years']):
+                four=[p10.text for p10 in rows[h].find_all('td')]
+                for j10 in four:
+                    four1=j10.strip()
+                    four2=four1.split(" ")
+                    four2=four2[0].split("(")
+                    four2=four2[0].split("[")
+                    four3=four2[0]
+                    #print(type(four3))
+                    #body=body+str(four3)
+                    
+                    if len(four2[0])>7:
+                        four11=four2[0].replace(",","")
+                        popp=popul1.replace(",","")
+                        four3=int(four11)/int(popp)*100
+                        four3=float("{:.2f}".format(four3))
+                        four3=str(four3)+"%"
+                    #body=body+four3
+                        
+                    
+            if([p11.text for p11 in rows[h].find_all('th')]==['Age structure']):
+                bb=h
+                #print(h)
+                u64=[p11.text for p11 in rows[bb+2].find_all('td')]
+                for j11 in u64:
+                    u1=j11.strip()
+                    u1=u1.replace("[1]","").replace(" ","")
+                    u2=u1.split("(")
+                    u3=u2[0]
+                    if len(u2[0])>7:
+                        u21=u2[0].replace(",","")
+                        popp=popul1.replace(",","")
+                        u3=int(u21)/int(popp)*100
+                        u3=float("{:.2f}".format(u3))
+                        u3=str(u3)+"%"
+                    body=body+u3
+                        
+                    
+            if([p12.text for p12 in rows[h].find_all('th')]==['Age structure']):
+                bbb=h
+                abo65=[p12.text for p12 in rows[bbb+3].find_all('td')]
+                for j12 in abo65:
+                    abo1=j12.strip()
+                    abo1=abo1.replace("[1]","").replace(" ","")
+                    abo2=abo1.split("(")
+                    abo3=abo2[0]
+                    if len(abo2[0])>7:
+                        abov=abo2[0].replace(",","")
+                        popp=popul1.replace(",","")
+                        abo3=int(abov)/int(popp)*100
+                        abo3=float("{:.2f}".format(abo3))
+                        abo3=str(abo3)+"%"   
+                    body=body+abo3
+                    
+                    
+            if([p13.text for p13 in rows[h].find_all('th')]==['Total']):
+                tot=[p13.text for p13 in rows[h].find_all('td')]
+                for j13 in tot:
+                    tot1=j13.strip()
+                    tot2=tot1.split(" ")   
+                    tot3=tot2[0]
+                    body=body+tot3
+                    
+            if([p14.text for p14 in rows[h].find_all('th')]==['At birth']):
+                atbi=[p14.text for p14 in rows[h].find_all('td')]
+                for j14 in atbi:
+                    atbi1=j14.strip()
+                    atbi2=atbi1.split(" ")
+                    atbi3=atbi2[0]
+                    body=body+atbi3
+                    
+            if([p15.text for p15 in rows[h].find_all('th')]==['Under 15']):
+                u15=[p15.text for p15 in rows[h].find_all('td')]
+                for j15 in u15:
+                    u151=j15.strip()
+                    u152=u151.split(" ")   
+                    u153=u152[0]       
+                    body=body+u153
+                    
+                    
+            if([p16.text for p16 in rows[h].find_all('th')]==['15–64 years']):
+                sixty=[p16.text for p16 in rows[h].find_all('td')]
+                for j16 in sixty:
+                    sixty1=j16.strip()
+                    sixty2=sixty1.split(" ")   
+                    sixty3=sixty2[0]
+                    body=body+sixty3
+                    
+                    
+            if([p17.text for p17 in rows[h].find_all('th')]==['65 and over']):
+                over=[p17.text for p17 in rows[h].find_all('td')]
+                for j17 in over:
+                    over1=j17.strip()
+                    over2=over1.split(" ")   
+                    over3=over2[0]       
+                    body=body+over3
+      
+
+    csv_writer.writerow([i,popul1,densi,grow,birth1,death1,life1,m2,f2,f1,infy,abo3,tot3,atbi3,u153,over3])
+    
+csv_file.close()
+print("done") 
